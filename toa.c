@@ -43,7 +43,6 @@ void checkStats(Player *player);
 // Global vars
 int isNewPlyr = 1;
 
-// Start menu function
 int menuStart() {
     system("clear");
     printf("---- Welcome to lazyrpg! ----\n\n");
@@ -64,7 +63,7 @@ int menuStart() {
                 Player player;
                 if (createNewPlayer(&player) == SUCCESS) {
                     remove("playerData
-            /isNew.txt"); // Remove isNew.txt as player starts a new game
+            /isNew.txt");
                     gameLoop(&player);
                 } else {
                     printf("Failed to create new player.\n");
@@ -78,7 +77,6 @@ int menuStart() {
             }
         }
     } else {
-        // Player has played before (isNew.txt does not exist)
         printf("Welcome back!\n");
         
         while (1) {
@@ -102,7 +100,6 @@ int menuStart() {
                 }
                 break;
             } else if (choice == 2) {
-                // Mark as new by creating isNew.txt again
                 system("clear");
                 remove("playerData/savefile.txt");
                 FILE *newFile = fopen("playerData
@@ -133,11 +130,11 @@ int gameLoop(Player *player) {
     displayStory("As the last heir of Arenthia, you embark on a quest to restore your kingdom, shattered by Drüig's dark magic.");
 
     int choice;
-    while (player->fragmentsCollected < 5) { // Assuming 5 fragments to collect
+    while (player->fragmentsCollected < 5) {
         printf("\n---- Main Menu ----\n");
         printf("1) Explore Region\n");
         printf("2) Upgrade Gear\n");
-        printf("3) Check Stats\n");  // New option to check stats
+        printf("3) Check Stats\n");
         printf("4) Quit to Pause Menu\n");
         printf("Enter your choice: ");
         scanf("%d", &choice);
@@ -192,7 +189,6 @@ void exploreRegion(Player *player) {
 
 // Random encounter function
 void randomEncounter(Player *player) {
-    // Monster stats can be adjusted based on the region difficulty
     int monsterHp = rand() % 10 + 5; // Randomized HP between 5 and 15
     int monsterAtk = rand() % 5 + 3; // Randomized Attack between 3 and 8
     int monsterDef = rand() % 3 + 2; // Randomized Defense between 2 and 5
@@ -390,7 +386,7 @@ int createNewPlayer(Player *player) {
 // Display story function
 void displayStory(const char* story) {
     printf("\n%s\n", story);
-    sleep(2); // Adding a short delay for effect
+    sleep(2);
 }
 
 // Main function
@@ -398,7 +394,7 @@ int main(void) {
     system("clear");
     system("mkdir -p player");
 
-    srand(time(NULL)); // Seed the random number generator
+    srand(time(NULL));
 
     menuStart();
     return SUCCESS;
