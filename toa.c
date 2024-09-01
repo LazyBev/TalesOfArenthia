@@ -48,7 +48,7 @@ int menuStart() {
     system("clear");
     printf("---- Welcome to lazyrpg! ----\n\n");
 
-    FILE *new = fopen("player/isNew.txt", "r");
+    FILE *new = fopen("playerData/isNew.txt", "r");
     int choice;
 
     if (new != NULL) {
@@ -63,7 +63,8 @@ int menuStart() {
             if (choice == 1) {
                 Player player;
                 if (createNewPlayer(&player) == SUCCESS) {
-                    remove("player/isNew.txt"); // Remove isNew.txt as player starts a new game
+                    remove("playerData
+            /isNew.txt"); // Remove isNew.txt as player starts a new game
                     gameLoop(&player);
                 } else {
                     printf("Failed to create new player.\n");
@@ -103,8 +104,9 @@ int menuStart() {
             } else if (choice == 2) {
                 // Mark as new by creating isNew.txt again
                 system("clear");
-                remove("player/savefile.txt");
-                FILE *newFile = fopen("player/isNew.txt", "w");
+                remove("playerData/savefile.txt");
+                FILE *newFile = fopen("playerData
+        /isNew.txt", "w");
                 if (newFile == NULL) {
                     return FAILURE;
                 }
@@ -128,7 +130,7 @@ int gameLoop(Player *player) {
     system("clear");
     printf("\nStarting game as %s\n", player->name);
     printf("Stats -> HP: %d, Attack: %d, Defense: %d, Gold: %d\n", player->hp, player->attack, player->defense, player->gold);
-    displayStory("As the last heir of Arenthia, you embark on a quest to restore your kingdom, shattered by Zoltar's dark magic.");
+    displayStory("As the last heir of Arenthia, you embark on a quest to restore your kingdom, shattered by Drüig's dark magic.");
 
     int choice;
     while (player->fragmentsCollected < 5) { // Assuming 5 fragments to collect
@@ -291,17 +293,17 @@ int whichBoss(Player *player) {
     }
     if (player->fragmentsCollected == 3) {
         // Fourth encounter
-        if (encounterGuardian(player, "Bog Beast", 22, 8, 8) == SUCCESS) {
+        if (encounterGuardian(player, "The Ruler of the Bog", 22, 8, 8) == SUCCESS) {
             player->fragmentsCollected++;
-            displayStory("The Bog Beast is no more, and the fourth fragment is now in your possession. The final fragment awaits in Zoltar's Fortress.");
+            displayStory("The Ruler of the Bog is no more, and the fourth fragment is now in your possession. The final fragment awaits in Zoltar's Fortress.");
         }
         return SUCCESS;
     }
     if (player->fragmentsCollected == 4) {
         // Final battle
-        if (encounterGuardian(player, "Dark Sorcerer Zoltar", 30, 10, 10) == SUCCESS) {
+        if (encounterGuardian(player, "Dark Sorcerer Drüig", 30, 10, 10) == SUCCESS) {
             player->fragmentsCollected++;
-            displayStory("You have defeated Zoltar and reunited the Crystal of Light. Arenthia is saved, and you have restored peace to the kingdom. Congratulations!");
+            displayStory("You have defeated Drüig and reunited the Crystal of Light. Arenthia is saved, and you have restored peace to the kingdom. Congratulations!");
             printf("You have completed the game!\n");
             exit(0);
         }
@@ -344,7 +346,7 @@ int menuPause(Player *player) {
 
 // Load game function
 int loadGame(Player *player) {
-    FILE *file = fopen("player/savefile.txt", "r");
+    FILE *file = fopen("playerData/savefile.txt", "r");
     if (file == NULL) {
         printf("Couldn't find save file, starting new game instead!\n");
         saveGame(player);
@@ -359,7 +361,7 @@ int loadGame(Player *player) {
 
 // Save game function
 int saveGame(Player *player) {
-    FILE *file = fopen("player/savefile.txt", "w");
+    FILE *file = fopen("playerData/savefile.txt", "w");
     if (file == NULL) {
         printf("ERROR: Couldn't save!\n");
         return FAILURE;
