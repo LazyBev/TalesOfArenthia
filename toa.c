@@ -26,28 +26,30 @@ typedef struct {
 } Player;
 
 // Function declarations
-int gameLoop(Player *player);
+int gameLoop(Player * player);
 int menuStart();
-int menuPause(Player *player);
-int loadGame(Player *player);
-int saveGame(Player *player);
-int whichBoss(Player *player);
-int createNewPlayer(Player *player);
-int encounterGuardian(Player *player, const char* guardianName, int guardianHp, int guardianAtk, int guardianDef);
-void displayStory(const char* story);
-void exploreRegion(Player *player);
-void upgradeGear(Player *player);
-void randomEncounter(Player *player);
-void checkStats(Player *player);
+int menuPause(Player * player);
+int loadGame(Player * player);
+int saveGame(Player * player);
+int whichBoss(Player * player);
+int createNewPlayer(Player * player);
+int combat(Player * player, const char * guardianName, int guardianHp, int guardianAtk, int guardianDef);
+int gaurdianCombat(Player * player, int guardianHp, int guardianAtk, int guardianDef);
+void displayStory(const char * story);
+void exploreRegion(Player * player);
+void upgradeGear(Player * player);
+void randomEncounter(Player * player);
+void checkStats(Player * player);
 
 // Global vars
 int isNewPlyr = 1;
+int startMsg = 0;
 
 int menuStart() {
     system("clear");
     printf("---- Welcome to lazyrpg! ----\n\n");
 
-    FILE *new = fopen("playerData/isNew.txt", "r");
+    FILE * new = fopen("playerData/isNew.txt", "r");
     int choice;
 
     if (new != NULL) {
@@ -58,13 +60,11 @@ int menuStart() {
             printf("2) Quit\n");
             printf("Enter your choice: ");
             scanf("%d", &choice);
-
             if (choice == 1) {
                 Player player;
                 if (createNewPlayer(&player) == SUCCESS) {
-                    remove("playerData
-            /isNew.txt");
-                    gameLoop(&player);
+                    remove("playerData/isNew.txt ");
+                        gameLoop(&player);
                 } else {
                     printf("Failed to create new player.\n");
                 }
@@ -78,22 +78,21 @@ int menuStart() {
         }
     } else {
         printf("Welcome back!\n");
-        
+
         while (1) {
             printf("1) Continue\n");
             printf("2) Start New Game\n");
             printf("3) Quit\n");
             printf("Enter your choice: ");
             scanf("%d", &choice);
-
             Player player;
             if (choice == 1) {
-                if (loadGame(&player) == SUCCESS) {
-                    gameLoop(&player);
+                if (loadGame( &player) == SUCCESS) {
+                    gameLoop( &player);
                 } else {
                     printf("Failed to load the game. Starting new game.\n");
-                    if (createNewPlayer(&player) == SUCCESS) {
-                        gameLoop(&player);
+                    if (createNewPlayer( &player) == SUCCESS) {
+                        gameLoop( &player);
                     } else {
                         printf("Failed to create new player.\n");
                     }
@@ -102,32 +101,35 @@ int menuStart() {
             } else if (choice == 2) {
                 system("clear");
                 remove("playerData/savefile.txt");
-                FILE *newFile = fopen("playerData
-        /isNew.txt", "w");
+
+                FILE *newFile = fopen("playerData/isNew.txt", "w");
                 if (newFile == NULL) {
                     return FAILURE;
                 }
                 fclose(newFile);
+
                 menuStart();
                 break;
             } else if (choice == 3) {
                 system("clear");
                 printf("See ya next time! :D\n");
-                exit(0);
-            } else {
-                printf("Invalid choice. Please try again.\n");
+                    exit(0);
+                } else {
+                    printf("Invalid choice. Please try again.\n");
             }
         }
     }
-
     return SUCCESS;
 }
 
 int gameLoop(Player *player) {
     system("clear");
     printf("\nStarting game as %s\n", player->name);
-    printf("Stats -> HP: %d, Attack: %d, Defense: %d, Gold: %d\n", player->hp, player->attack, player->defense, player->gold);
-    displayStory("As the last heir of Arenthia, you embark on a quest to restore your kingdom, shattered by Drüig's dark magic.");
+    printf("Stats->HP: %d, Attack: %d, Defense: %d, Gold: %d\n", player->hp, player->attack, player->defense, player->gold);
+    if (startMsg == 0) {
+        displayStory("As the last heir of Arenthia, you embark on a quest to restore your kingdom, shattered by Drüig's dark magic.");
+        startMsg = 1;
+    }
 
     int choice;
     while (player->fragmentsCollected < 5) {
@@ -152,7 +154,7 @@ int gameLoop(Player *player) {
             printf("Invalid choice. Please try again.\n");
         }
     }
-
+    
     return SUCCESS;
 }
 
@@ -166,7 +168,7 @@ void checkStats(Player *player) {
     printf("Fragments Collected: %d\n", player->fragmentsCollected);
 }
 
-// Explore Region function
+// Explore Region function with boss or enemy choice
 void exploreRegion(Player *player) {
     int regionChoice;
     while (1) {
@@ -175,14 +177,91 @@ void exploreRegion(Player *player) {
         printf("2) Mount Frostbite (Medium)\n");
         printf("3) Desert of Lost Souls (Hard)\n");
         printf("4) Swamp of Despair (Very Hard)\n");
+        printf("5) Go Back\n");
         printf("Enter your choice: ");
         scanf("%d", &regionChoice);
-
         if (regionChoice >= 1 && regionChoice <= 4) {
-            randomEncounter(player);
-            break;
-        } else {
-            printf("Invalid choice. Please try again.\n");
+            int encounterChoice;
+            while (1) {
+                printf("\n---- Choose Your Encounter ----\n");
+                printf("1) Fight the gaurdian that rules this land\n");
+                printf("2) Fight a Regular Enemy\n");
+                printf("3) Go Back\n");
+                printf("Enter your choice: ");
+                scanf("%d", &encounterChoice);
+                if (encounterChoice == 1) {
+                    printf("\n---- Choose Your boss ----\n");
+                    printf("Current ammount of fragments collected: %s\n", player ->fragmentsCollected);
+                    printf("1) Shadow Wraith\n");
+                    printf("2) Ice Dragon (requires 1 fragment collected)\n");
+                    printf("3) Sand Serpent (requires 2 fragments collected)\n");
+                    printf("4) The Ruler Of The Bog (requires 3 fragments collected)\n");
+                    printf("5) Dark Sorcerer Drüig (requires 4 fragments collected)\n");
+                    scanf("%d", &encounterChoice);
+                    if (encounterChoice == 1) {
+                        if (player->fragmentsCollected <= 0) {
+                            if (gaurdianCombat(player, 15, 5, 5) == SUCCESS) {
+                                player->fragmentsCollected++;
+                                displayStory("With the Shadow Wraith defeated, you hold the first fragment of the Crystal. Four more remain. The path ahead leads to Mount Frostbite, where the Ice Dragon awaits.");
+                            }
+                        } else {
+                            break;
+                        }
+                    } else if (encounterChoice == 2) {
+                        if (player->fragmentsCollected == 1) {
+                            if (gaurdianCombat(player, 20, 7, 7) == SUCCESS) {
+                                player->fragmentsCollected++;
+                                displayStory("You have conquered the Ice Dragon and claimed the second fragment of the Crystal. Your journey now takes you to the Desert of Lost Souls, where the Sand Serpent lurks.");
+                            } else {
+                                break;
+                            }
+                        }
+                    } else if (encounterChoice == 3) {
+                        if (player->fragmentsCollected == 2) {
+                            if (gaurdianCombat(player, 18, 6, 6) == SUCCESS) {
+                                player->fragmentsCollected++;
+                                displayStory("The Sand Serpent has fallen, and the third fragment is yours. Next, venture into the Swamp of Despair to face the Bog Beast.");
+                            } else {
+                                break;
+                            }
+                        }
+                    } else if (encounterChoice == 4) {
+                        if (player->fragmentsCollected == 3) {
+                            if (gaurdianCombat(player, 22, 8, 8) == SUCCESS) {
+                                player->fragmentsCollected++;
+                                displayStory("The Ruler of the Bog is no more, and the fourth fragment is now in your possession. The final fragment awaits in Zoltar's Fortress.");
+                            } else {
+                                break;
+                            }
+                        } else if (encounterChoice == 5) {
+                            if (player->fragmentsCollected == 4) {
+                                if (gaurdianCombat(player, 30, 10, 10) == SUCCESS) {
+                                    player->fragmentsCollected++;
+                                    displayStory("You have defeated Drüig and reunited the Crystal of Light. Arenthia is saved, and you have restored peace to the kingdom. Congratulations!");
+                                    printf("You have completed the game!\n");
+                                    exit(0);
+                                } else {
+                                    break;
+                                }
+                            }
+                        } else if (encounterChoice == 2) {
+                            randomEncounter(player);
+                            break;
+                        } else {
+                            printf("Invalid choice. Please try again.\n");
+                        }
+                    }
+                    break;
+                } else if (encounterChoice == 2) {
+                    randomEncounter(player);
+                } else if (encounterChoice == 3) {
+                    gameLoop(player);
+                } else {
+                    printf("Invalid try again!");
+                }
+            }
+        } else if (encounterChoice == 5) {
+            gameLoop(player);
         }
     }
 }
@@ -194,9 +273,9 @@ void randomEncounter(Player *player) {
     int monsterDef = rand() % 3 + 2; // Randomized Defense between 2 and 5
 
     printf("\nA wild monster appears!\n");
-    encounterGuardian(player, "Wild Monster", monsterHp, monsterAtk, monsterDef);
-    
+    combat(player, "Wild Monster", monsterHp, monsterAtk, monsterDef);
     int goldReward = rand() % 10 + 5; // Randomized gold reward between 5 and 15
+    
     player->gold += goldReward;
     printf("You found %d gold!\n", goldReward);
 }
@@ -239,82 +318,93 @@ void upgradeGear(Player *player) {
     }
 }
 
-// Encounter Guardian function
-int encounterGuardian(Player *player, const char* guardianName, int guardianHp, int guardianAtk, int guardianDef) {
-    printf("\nYou have encountered %s!\n", guardianName);
-    printf("%s Stats -> HP: %d, Attack: %d, Defense: %d\n", guardianName, guardianHp, guardianAtk, guardianDef);
+int combat(Player *player, const char *enemyName, int enemyHp, int enemyAtk, int enemyDef) {
+    printf("\nYou have encountered %s!\n", enemyName);
+    printf("%s Stats->HP: %d, Attack: %d, Defense: %d\n", enemyName, enemyHp, enemyAtk, enemyDef);
 
     // Simple combat simulation
-    while (guardianHp > 0 && player->hp > 0) {
-        guardianHp -= player->attack - guardianDef;
-        if (guardianHp > 0) {
-            player->hp -= guardianAtk - player->defense;
+    while (enemyHp > 0 && player->hp > 0) {
+        // Player attacks
+        int damage = player->attack - enemyDef;
+        if (damage < 0) damage = 0;
+        enemyHp -= damage;
+        printf("You dealt %d damage to %s. %s HP: %d\n", damage, enemyName, enemyName, enemyHp);
+
+        if (enemyHp > 0) {
+            // Enemy attacks
+            damage = enemyAtk - player->defense;
+            if (damage < 0) damage = 0;
+            player->hp -= damage;
+            printf("%s attacks and deals %d damage to you. Your HP: %d\n", enemyName, damage, player->hp);
         }
     }
 
     if (player->hp <= 0) {
-        printf("You were defeated by %s...\nGame Over!\n", guardianName);
-        exit(0);
+        printf("You were defeated by %s...\n", enemyName);
+        // Optionally, you might want to handle the game over scenario here
+        return FAILURE;
     } else {
-        printf("You defeated %s!\n", guardianName);
+        printf("You defeated %s!\n", enemyName);
         return SUCCESS;
     }
 }
 
-int whichBoss(Player *player) {
-    // Storyline progression
-    if (player->fragmentsCollected == 0) {
-        // First encounter
-        if (encounterGuardian(player, "Shadow Wraith", 15, 5, 5) == SUCCESS) {
-            player->fragmentsCollected++;
-            displayStory("With the Shadow Wraith defeated, you hold the first fragment of the Crystal. Four more remain. The path ahead leads to Mount Frostbite, where the Ice Dragon awaits.");
+
+int gaurdianCombat(Player *player, int guardianHp, int guardianAtk, int guardianDef) {
+    int choice;
+    int damage;
+
+    while (guardianHp > 0 && player->hp > 0) {
+        printf("\n---- Combat Menu ----\n");
+        printf("1) Attack\n");
+        printf("2) Defend\n");
+        printf("3) Use Item (not implemented)\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+        if (choice == 1) {
+            // Player attacks the guardian
+            damage = player->attack - guardianDef;
+            if (damage < 0) damage = 0;
+            guardianHp -= damage;
+            printf("You dealt %d damage to the guardian. Guardian HP: %d\n", damage, guardianHp);
+            // Guardian retaliates
+            damage = guardianAtk - player->defense;
+            if (damage < 0) damage = 0;
+            player->hp -= damage;
+            printf("The guardian retaliates and deals %d damage to you. Your HP: %d\n", damage, player->hp);
+        } else if (choice == 2) {
+            // Player defends
+            damage = (guardianAtk - player->defense) / 2;
+            if (damage < 0) damage = 0;
+            player->hp -= damage;
+            printf("You defend against the guardian's attack, reducing damage to %d. Your HP: %d\n", damage, player->hp);
+        } else if (choice == 3) {
+            printf("This feature is not yet implemented.\n");
+        } else {
+            printf("Invalid choice. Please try again.\n");
         }
-        return SUCCESS;
-    }
-    if (player->fragmentsCollected == 1) {
-        // Second encounter
-        if (encounterGuardian(player, "Ice Dragon", 20, 7, 7) == SUCCESS) {
-            player->fragmentsCollected++;
-            displayStory("You have conquered the Ice Dragon and claimed the second fragment of the Crystal. Your journey now takes you to the Desert of Lost Souls, where the Sand Serpent lurks.");
+        if (guardianHp <= 0) {
+            printf("You defeated the guardian!\n");
+            gameLoop(player);
+            return SUCCESS;
+        } else if (player->hp <= 0) {
+            printf("You were defeated by the guardian...\n");
+            gameLoop(player);
+            return FAILURE;
         }
-        return SUCCESS;
     }
-    if (player->fragmentsCollected == 2) {
-        // Third encounter
-        if (encounterGuardian(player, "Sand Serpent", 18, 6, 6) == SUCCESS) {
-            player->fragmentsCollected++;
-            displayStory("The Sand Serpent has fallen, and the third fragment is yours. Next, venture into the Swamp of Despair to face the Bog Beast.");
-        }
-        return SUCCESS;
-    }
-    if (player->fragmentsCollected == 3) {
-        // Fourth encounter
-        if (encounterGuardian(player, "The Ruler of the Bog", 22, 8, 8) == SUCCESS) {
-            player->fragmentsCollected++;
-            displayStory("The Ruler of the Bog is no more, and the fourth fragment is now in your possession. The final fragment awaits in Zoltar's Fortress.");
-        }
-        return SUCCESS;
-    }
-    if (player->fragmentsCollected == 4) {
-        // Final battle
-        if (encounterGuardian(player, "Dark Sorcerer Drüig", 30, 10, 10) == SUCCESS) {
-            player->fragmentsCollected++;
-            displayStory("You have defeated Drüig and reunited the Crystal of Light. Arenthia is saved, and you have restored peace to the kingdom. Congratulations!");
-            printf("You have completed the game!\n");
-            exit(0);
-        }
-        return SUCCESS;
-    }
+    return SUCCESS;
 }
 
 // Pause menu function
-int menuPause(Player *player) {
+int menuPause(Player * player) {
     while (1) {
         int choice;
         printf("\n---- Pause Menu ----\n");
         printf("1) Resume\n");
         printf("2) Save Game\n");
-        printf("3) Quit to Main Menu\n");
+        printf("3) Load Game\n");
+        printf("4) Quit to Main Menu\n");
         printf("Enter your choice: ");
         scanf("%d", &choice);
 
@@ -328,6 +418,13 @@ int menuPause(Player *player) {
             }
             return SUCCESS;
         } else if (choice == 3) {
+            if (loadGame(player) == SUCCESS) {
+                printf("Game loaded successfully.\n");
+            } else {
+                printf("Failed to load the game.\n");
+            }
+            return SUCCESS;
+        } else if (choice == 4) {
             system("clear");
             printf("Returning to main menu...\n");
             menuStart();
@@ -340,24 +437,31 @@ int menuPause(Player *player) {
     return SUCCESS;
 }
 
-// Load game function
 int loadGame(Player *player) {
     FILE *file = fopen("playerData/savefile.txt", "r");
+
     if (file == NULL) {
-        printf("Couldn't find save file, starting new game instead!\n");
-        saveGame(player);
+        printf("Error: Save file not found. Starting a new game.\n");
         return FAILURE;
     }
 
-    fscanf(file, "%s %d %d %d %d %d %d", player->name, &player->hp, &player->attack, &player->defense, &player->inventorySize, &player->fragmentsCollected, &player->gold);
-    fclose(file);
+    int result = fscanf(file, "%s %d %d %d %d %d %d", player->name, &player->hp, &player->attack, &player->defense, &player->inventorySize, &player->fragmentsCollected, &player->gold);
 
+    if (result != 7) {
+        printf("Error: Failed to read player data correctly. saving instead.\n");
+        saveGame(player);
+        fclose(file);
+        return FAILURE;
+    }
+
+    fclose(file);
     return SUCCESS;
 }
 
+
 // Save game function
-int saveGame(Player *player) {
-    FILE *file = fopen("playerData/savefile.txt", "w");
+int saveGame(Player * player) {
+    FILE * file = fopen("playerData/savefile.txt", "w");
     if (file == NULL) {
         printf("ERROR: Couldn't save!\n");
         return FAILURE;
@@ -370,7 +474,7 @@ int saveGame(Player *player) {
 }
 
 // Create new player function
-int createNewPlayer(Player *player) {
+int createNewPlayer(Player * player) {
     printf("Enter your character's name: ");
     scanf("%s", player->name);
     player->hp = DEFLT_HP;
@@ -384,7 +488,7 @@ int createNewPlayer(Player *player) {
 }
 
 // Display story function
-void displayStory(const char* story) {
+void displayStory(const char * story) {
     printf("\n%s\n", story);
     sleep(2);
 }
