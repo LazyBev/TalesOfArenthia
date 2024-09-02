@@ -23,6 +23,9 @@ typedef struct {
     int inventorySize;
     int fragmentsCollected;
     int gold;
+    int level;           
+    int xp;               
+    int xpToNextLevel;
 } Player;
 
 // Function declarations
@@ -39,6 +42,7 @@ void displayStory(const char * story);
 void exploreRegion(Player * player);
 void upgradeGear(Player * player);
 void randomEncounter(Player * player);
+void levelUp(Player *player);
 void checkStats(Player * player);
 
 // Global vars
@@ -161,6 +165,8 @@ int gameLoop(Player *player) {
 void checkStats(Player *player) {
     printf("\n---- Player Stats ----\n");
     printf("Name: %s\n", player->name);
+    printf("Level: %d\n", player->level);
+    printf("XP: %d / %d\n", player->xp, player->xpToNextLevel);
     printf("HP: %d\n", player->hp);
     printf("Attack: %d\n", player->attack);
     printf("Defense: %d\n", player->defense);
@@ -322,16 +328,13 @@ int combat(Player *player, const char *enemyName, int enemyHp, int enemyAtk, int
     printf("\nYou have encountered %s!\n", enemyName);
     printf("%s Stats->HP: %d, Attack: %d, Defense: %d\n", enemyName, enemyHp, enemyAtk, enemyDef);
 
-    // Simple combat simulation
     while (enemyHp > 0 && player->hp > 0) {
-        // Player attacks
         int damage = player->attack - enemyDef;
         if (damage < 0) damage = 0;
         enemyHp -= damage;
         printf("You dealt %d damage to %s. %s HP: %d\n", damage, enemyName, enemyName, enemyHp);
 
         if (enemyHp > 0) {
-            // Enemy attacks
             damage = enemyAtk - player->defense;
             if (damage < 0) damage = 0;
             player->hp -= damage;
@@ -341,14 +344,17 @@ int combat(Player *player, const char *enemyName, int enemyHp, int enemyAtk, int
 
     if (player->hp <= 0) {
         printf("You were defeated by %s...\n", enemyName);
-        // Optionally, you might want to handle the game over scenario here
         return FAILURE;
     } else {
         printf("You defeated %s!\n", enemyName);
+        int xpGain = rand() % 50 + 50; // Randomized XP reward between 50 and 100
+        player->xp += xpGain;
+        printf("You gained %d XP!\n", xpGain);
+
+        levelUp(player); // Check if the player should level up
         return SUCCESS;
     }
 }
-
 
 int gaurdianCombat(Player *player, int guardianHp, int guardianAtk, int guardianDef) {
     int choice;
@@ -361,19 +367,18 @@ int gaurdianCombat(Player *player, int guardianHp, int guardianAtk, int guardian
         printf("3) Use Item (not implemented)\n");
         printf("Enter your choice: ");
         scanf("%d", &choice);
+
         if (choice == 1) {
-            // Player attacks the guardian
             damage = player->attack - guardianDef;
             if (damage < 0) damage = 0;
             guardianHp -= damage;
             printf("You dealt %d damage to the guardian. Guardian HP: %d\n", damage, guardianHp);
-            // Guardian retaliates
+
             damage = guardianAtk - player->defense;
             if (damage < 0) damage = 0;
             player->hp -= damage;
             printf("The guardian retaliates and deals %d damage to you. Your HP: %d\n", damage, player->hp);
         } else if (choice == 2) {
-            // Player defends
             damage = (guardianAtk - player->defense) / 2;
             if (damage < 0) damage = 0;
             player->hp -= damage;
@@ -383,16 +388,21 @@ int gaurdianCombat(Player *player, int guardianHp, int guardianAtk, int guardian
         } else {
             printf("Invalid choice. Please try again.\n");
         }
+
         if (guardianHp <= 0) {
             printf("You defeated the guardian!\n");
-            gameLoop(player);
+            int xpGain = 100; // Fixed XP reward for defeating a guardian
+            player->xp += xpGain;
+            printf("You gained %d XP!\n", xpGain);
+
+            levelUp(player); // Check if the player should level up
             return SUCCESS;
         } else if (player->hp <= 0) {
             printf("You were defeated by the guardian...\n");
-            gameLoop(player);
             return FAILURE;
         }
     }
+
     return SUCCESS;
 }
 
@@ -445,11 +455,14 @@ int loadGame(Player *player) {
         return FAILURE;
     }
 
-    int result = fscanf(file, "%s %d %d %d %d %d %d", player->name, &player->hp, &player->attack, &player->defense, &player->inventorySize, &player->fragmentsCollected, &player->gold);
+    int result = fscanf(file, "%s %d %d %d %d %d %d %d %d %d", 
+                        player->name, &player->hp, &player->attack, 
+                        &player->defense, &player->inventorySize, 
+                        &player->fragmentsCollected, &player->gold, 
+                        &player->level, &player->xp, &player->xpToNextLevel);
 
-    if (result != 7) {
-        printf("Error: Failed to read player data correctly. saving instead.\n");
-        saveGame(player);
+    if (result != 10) {
+        printf("Error: Failed to read player data correctly. Starting a new game.\n");
         fclose(file);
         return FAILURE;
     }
@@ -458,23 +471,40 @@ int loadGame(Player *player) {
     return SUCCESS;
 }
 
-
-// Save game function
-int saveGame(Player * player) {
-    FILE * file = fopen("playerData/savefile.txt", "w");
+int saveGame(Player *player) {
+    FILE *file = fopen("playerData/savefile.txt", "w");
     if (file == NULL) {
         printf("ERROR: Couldn't save!\n");
         return FAILURE;
     }
 
-    fprintf(file, "%s %d %d %d %d %d %d\n", player->name, player->hp, player->attack, player->defense, player->inventorySize, player->fragmentsCollected, player->gold);
-    fclose(file);
+    fprintf(file, "%s %d %d %d %d %d %d %d %d %d\n", 
+            player->name, player->hp, player->attack, player->defense, 
+            player->inventorySize, player->fragmentsCollected, player->gold, 
+            player->level, player->xp, player->xpToNextLevel);
 
+    fclose(file);
     return SUCCESS;
 }
 
+void levelUp(Player *player) {
+    if (player->xp >= player->xpToNextLevel) {
+        player->level++;
+        player->xp -= player->xpToNextLevel;
+        player->xpToNextLevel += 100; // Increase XP requirement for the next level
+
+        // Increase player stats on level up
+        player->hp += 5;
+        player->attack += 2;
+        player->defense += 2;
+
+        printf("\nCongratulations! You've leveled up to level %d!\n", player->level);
+        printf("Your HP increased to %d, Attack to %d, and Defense to %d.\n", player->hp, player->attack, player->defense);
+    }
+}
+
 // Create new player function
-int createNewPlayer(Player * player) {
+int createNewPlayer(Player *player) {
     printf("Enter your character's name: ");
     scanf("%s", player->name);
     player->hp = DEFLT_HP;
@@ -483,7 +513,9 @@ int createNewPlayer(Player * player) {
     player->inventorySize = DEF_INV_SIZE;
     player->fragmentsCollected = 0;
     player->gold = 0;
-
+    player->level = 1;
+    player->xp = 0;
+    player->xpToNextLevel = 100;
     return SUCCESS;
 }
 
