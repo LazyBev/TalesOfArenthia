@@ -12,7 +12,9 @@
 #define DEFLT_HP 10
 #define DEFLT_ATK 10
 #define DEFLT_DEF 10
-#define MAX_REGIONS 4
+#define STARTING_FRAGS 0
+#define DEFLT_GOLD 15
+#define DEFLT_LVL 0
 
 typedef struct {
     char name[MAX_NAME_LEN];
@@ -54,6 +56,23 @@ void waitMsg(char *msg) {
     getchar();
 }
 
+int autosave(Player *player) {
+    printf("Autosaving...\n");
+    sleep(2);
+    system("clear");
+    if (saveGame(player) == SUCCESS) {
+        system("clear");
+        printf("Game saved successfully.\n");
+        waitMsg("Press Enter to Continue!...");
+        return SUCCESS;
+    } else {
+        system("clear");
+        printf("Failed to save the game.\n");
+        waitMsg("Press Enter to Continue!...");
+        return FAILURE;
+    }
+}
+
 int menuStart() {
     system("clear");
     printf("\n#       Welcome to lazyrpg!       #\n\n");
@@ -73,7 +92,7 @@ int menuStart() {
                 Player player;
                 if (createNewPlayer(&player) == SUCCESS) {
                     remove("playerData/isNew.txt ");
-                        gameLoop(&player);
+                    gameLoop(&player);
                 } else {
                     printf("Failed to create new player.\n");
                 }
@@ -110,6 +129,8 @@ int menuStart() {
             } else if (choice == 2) {
                 system("clear");
                 remove("playerData/savefile.txt");
+                FILE *sf = fopen("playerData/savefile.txt", "w");
+                fclose(sf);
 
                 FILE *newFile = fopen("playerData/isNew.txt", "w");
                 if (newFile == NULL) {
@@ -121,10 +142,11 @@ int menuStart() {
                 break;
             } else if (choice == 3) {
                 system("clear");
+                sleep(2);
                 printf("See ya next time! :D\n");
-                    exit(0);
-                } else {
-                    printf("Invalid choice. Please try again.\n");
+                exit(0);
+            } else {
+                printf("Invalid choice. Please try again.\n");
             }
         }
     }
@@ -132,6 +154,7 @@ int menuStart() {
 }
 
 int gameLoop(Player *player) {
+    int choice;
     system("clear");
 
     if (startMsg == 0) {
@@ -145,7 +168,7 @@ int gameLoop(Player *player) {
         startMsg = 1;
     }
 
-    int choice;
+    autosave(player);
     while (1) {
         system("clear");
         printf("\n#       Main Menu       #\n\n");
@@ -153,7 +176,7 @@ int gameLoop(Player *player) {
         printf("2) Upgrade Gear\n");
         printf("3) Check Stats\n");
         printf("4) Save Game\n");
-        printf("5) Quit to Pause Menu\n");
+        printf("5) Quit\n");
         printf("Enter your choice: ");
         scanf("%d", &choice);
 
@@ -175,7 +198,7 @@ int gameLoop(Player *player) {
             }
         } else if (choice == 5) {
             system("clear");
-            menuPause(player);
+            exit(0);
         } else {
             printf("Invalid choice. Please try again.\n");
         }
@@ -233,7 +256,7 @@ void exploreRegion(Player *player) {
                 system("clear");
                 if (encounterChoice == 1) {
                     printf("\n#       Choose Your boss       #\n\n");
-                    printf("Current ammount of fragments collected: %s\n", player ->fragmentsCollected);
+                    printf("Current ammount of fragments collected: %d\n", player ->fragmentsCollected);
                     printf("1) Shadow Wraith\n");
                     printf("2) Ice Dragon (requires 1 fragment collected)\n");
                     printf("3) Sand Serpent (requires 2 fragments collected)\n");
@@ -320,6 +343,7 @@ void upgradeGear(Player *player) {
     
     system("clear");
     printf("Checking funds...\n");
+    sleep(2);
     system("clear");
     printf("Loading shop...\n");
     sleep(2);
@@ -528,6 +552,7 @@ int saveGame(Player *player) {
         waitMsg("Press Enter to Continue!...\n");
         return FAILURE;
     }
+    remove("playerData/isNew.txt");
 
     fprintf(file, "%s %d %d %d %d %d %d %d %d %d\n", 
             player->name, player->hp, player->attack, player->defense, 
@@ -564,9 +589,9 @@ int createNewPlayer(Player *player) {
     player->attack = DEFLT_ATK;
     player->defense = DEFLT_DEF;
     player->inventorySize = DEF_INV_SIZE;
-    player->fragmentsCollected = 0;
-    player->gold = 0;
-    player->level = 1;
+    player->fragmentsCollected = STARTING_FRAGS;
+    player->gold = DEFLT_GOLD;
+    player->level = DEFLT_LVL;
     player->xp = 0;
     player->xpToNextLevel = 100;
     system("clear");
