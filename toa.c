@@ -14,7 +14,6 @@
 #define DEFLT_DEF 10
 #define MAX_REGIONS 4
 
-// Player structure to hold player details
 typedef struct {
     char name[MAX_NAME_LEN];
     int hp;
@@ -28,7 +27,6 @@ typedef struct {
     int xpToNextLevel;
 } Player;
 
-// Function declarations
 int gameLoop(Player * player);
 int menuStart();
 int menuPause(Player * player);
@@ -45,15 +43,20 @@ void randomEncounter(Player * player);
 void levelUp(Player *player);
 void checkStats(Player * player);
 
-// Global vars
 int isNewPlyr = 1;
 int startMsg = 0;
+int wPurchasedAmount = 0;
+int aPurchasedAmount = 0;
+
+void waitMsg(char *msg) {
+    printf("%s", msg);
+    while(getchar() != '\n');
+    getchar();
+}
 
 int menuStart() {
     system("clear");
-    printf("\n###################################\n");
-    printf("\n#       Welcome to lazyrpg!       #\n");
-    printf("\n###################################\n\n");
+    printf("\n#       Welcome to lazyrpg!       #\n\n");
 
     FILE * new = fopen("playerData/isNew.txt", "r");
     int choice;
@@ -130,22 +133,27 @@ int menuStart() {
 
 int gameLoop(Player *player) {
     system("clear");
-    printf("\nStarting game as %s\n", player->name);
-    printf("Stats->HP: %d, Attack: %d, Defense: %d, Gold: %d\n", player->hp, player->attack, player->defense, player->gold);
+
     if (startMsg == 0) {
-        displayStory("As the last heir of Arenthia, you embark on a quest to restore your kingdom, shattered by Drüig's dark magic.");
+        printf("Starting game as %s...\n", player->name);
+        sleep(2);
+        system("clear");
+        printf("\n#       Story       #\n");
+        displayStory("As the last heir of Arenthia, you embark on a quest to restore your once glorious kingdom, shattered by the earth shattering dark magic\nof Drüig, the almighty dark sorcerer. The kingdom of Arenthia used to be a fluorishing kingdom full of life and amazing people. Now its\nyour job to go and save your people");
+        waitMsg("Press Enter to continue!...");
+        system("clear");
         startMsg = 1;
     }
 
     int choice;
-    while (player->fragmentsCollected < 5) {
-        printf("\n#########################\n");
-        printf("\n#       Main Menu       #\n");
-        printf("\n#########################\n\n");
+    while (1) {
+        system("clear");
+        printf("\n#       Main Menu       #\n\n");
         printf("1) Explore Region\n");
         printf("2) Upgrade Gear\n");
         printf("3) Check Stats\n");
-        printf("4) Quit to Pause Menu\n");
+        printf("4) Save Game\n");
+        printf("5) Quit to Pause Menu\n");
         printf("Enter your choice: ");
         scanf("%d", &choice);
 
@@ -156,6 +164,16 @@ int gameLoop(Player *player) {
         } else if (choice == 3) {
             checkStats(player);
         } else if (choice == 4) {
+            if (saveGame(player) == SUCCESS) {
+                system("clear");
+                printf("Game saved successfully.\n");
+                waitMsg("Press Enter to Continue!...\n");
+            } else {
+                system("clear");
+                printf("Failed to save the game.\n");
+                waitMsg("Press Enter to Continue!...\n");
+            }
+        } else if (choice == 5) {
             system("clear");
             menuPause(player);
         } else {
@@ -167,9 +185,8 @@ int gameLoop(Player *player) {
 }
 
 void checkStats(Player *player) {
-    printf("\n############################\n");
-    printf("\n#       Player Stats       #\n");
-    printf("\n############################\n\n");
+    system("clear");
+    printf("\n#       Player Stats       #\n\n");
     printf("Name: %s\n", player->name);
     printf("Level: %d\n", player->level);
     printf("XP: %d / %d\n", player->xp, player->xpToNextLevel);
@@ -178,15 +195,23 @@ void checkStats(Player *player) {
     printf("Defense: %d\n", player->defense);
     printf("Gold: %d\n", player->gold);
     printf("Fragments Collected: %d\n", player->fragmentsCollected);
+    waitMsg("Press Enter to Continue!...\n");
+
 }
 
-// Explore Region function with boss or enemy choice
 void exploreRegion(Player *player) {
     int regionChoice;
+    int monsterHp = rand() % 10 + 5;
+    int monsterAtk = rand() % 5 + 3;
+    int monsterDef = rand() % 3 + 2;
+
+    system("clear");
+    printf("Loading map...\n");
+    sleep(2);
+    system("clear");
+
     while (1) {
-        printf("\n##########################################\n");
-        printf("\n#       Select a Region to Explore       #\n");
-        printf("\n##########################################\n\n");
+        printf("\n#       Select a Region to Explore       #\n\n");
         printf("1) Forest of Whispering Shadows (Easy)\n");
         printf("2) Mount Frostbite (Medium)\n");
         printf("3) Desert of Lost Souls (Hard)\n");
@@ -194,17 +219,20 @@ void exploreRegion(Player *player) {
         printf("5) Go Back\n");
         printf("Enter your choice: ");
         scanf("%d", &regionChoice);
-        if (regionChoice != 5 && regionChoice > 1 && regionChoice <= 4) {
+        system("clear");
+        if (regionChoice != 5 && regionChoice >= 1 && regionChoice <= 4) {
             int encounterChoice;
             while (1) {
-                printf("\n---- Choose Your Encounter ----\n");
+                system("clear");
+                printf("\n#       Choose Your Encounter       #\n\n");
                 printf("1) Fight the gaurdian that rules this land\n");
                 printf("2) Fight a Regular Enemy\n");
                 printf("3) Go Back\n");
                 printf("Enter your choice: ");
                 scanf("%d", &encounterChoice);
+                system("clear");
                 if (encounterChoice == 1) {
-                    printf("\n---- Choose Your boss ----\n");
+                    printf("\n#       Choose Your boss       #\n\n");
                     printf("Current ammount of fragments collected: %s\n", player ->fragmentsCollected);
                     printf("1) Shadow Wraith\n");
                     printf("2) Ice Dragon (requires 1 fragment collected)\n");
@@ -212,6 +240,7 @@ void exploreRegion(Player *player) {
                     printf("4) The Ruler Of The Bog (requires 3 fragments collected)\n");
                     printf("5) Dark Sorcerer Drüig (requires 4 fragments collected)\n");
                     scanf("%d", &encounterChoice);
+                    system("clear");
                     if (encounterChoice == 1) {
                         if (player->fragmentsCollected <= 0) {
                             if (gaurdianCombat(player, 15, 5, 5) == SUCCESS) {
@@ -259,19 +288,21 @@ void exploreRegion(Player *player) {
                                 }
                             }
                         } else if (encounterChoice == 2) {
-                            randomEncounter(player);
+                            combat(player, "Wild Monster", monsterHp, monsterAtk, monsterDef);
                             break;
                         } else {
                             printf("Invalid choice. Please try again.\n");
+                            system("clear");
                         }
                     }
                     break;
                 } else if (encounterChoice == 2) {
-                    randomEncounter(player);
+                    combat(player, "Wild Monster", monsterHp, monsterAtk, monsterDef);
                 } else if (encounterChoice == 3) {
                     gameLoop(player);
                 } else {
                     printf("Invalid try again!");
+                    system("clear");
                 }
             }
         } else if (regionChoice == 5) {
@@ -282,63 +313,76 @@ void exploreRegion(Player *player) {
     }
 }
 
-// Random encounter function
-void randomEncounter(Player *player) {
-    int monsterHp = rand() % 10 + 5; // Randomized HP between 5 and 15
-    int monsterAtk = rand() % 5 + 3; // Randomized Attack between 3 and 8
-    int monsterDef = rand() % 3 + 2; // Randomized Defense between 2 and 5
-
-    printf("\nA wild monster appears!\n");
-    combat(player, "Wild Monster", monsterHp, monsterAtk, monsterDef);
-    int goldReward = rand() % 10 + 5; // Randomized gold reward between 5 and 15
-    
-    player->gold += goldReward;
-    printf("You found %d gold!\n", goldReward);
-}
-
-// Gear upgrade function
 void upgradeGear(Player *player) {
     int upgradeChoice;
-    int upgradeCost = 20;
-
-    if (player->gold < upgradeCost) {
-        printf("You don't have enough gold to upgrade your gear. Earn more by exploring!\n");
-        return;
-    }
+    int weaponUpgradeCost = (wPurchasedAmount != 0) ? 20 * wPurchasedAmount : 20;
+    int armorUpgradeCost = (aPurchasedAmount != 0) ? 20 * aPurchasedAmount : 20;
+    
+    system("clear");
+    printf("Checking funds...\n");
+    system("clear");
+    printf("Loading shop...\n");
+    sleep(2);
+    system("clear");
 
     while (1) {
-        printf("\n############################\n");
-        printf("\n#       Upgrade Gear       #\n");
-        printf("\n############################\n\n");
-        printf("You have %d gold.\n", player->gold);
-        printf("Upgrade cost: %d gold\n", upgradeCost);
+        system("clear");
+        printf("\n#       Upgrade Gear       #\n\n");
+        printf("You have %d gold.\n\n", player->gold);
+        printf("Upgrade cost:\nWeapon: %d gold\nArmor: %d\n", weaponUpgradeCost, armorUpgradeCost);
         printf("1) Upgrade Weapon (Increase Attack)\n");
         printf("2) Upgrade Armor (Increase Defense)\n");
         printf("3) Cancel\n");
         printf("Enter your choice: ");
         scanf("%d", &upgradeChoice);
+        system("clear");
 
-        if (upgradeChoice == 1) {
+        if (upgradeChoice == 1 && player->gold >= weaponUpgradeCost) {
             player->attack += 2;
-            player->gold -= upgradeCost;
+            player->gold -= weaponUpgradeCost;
+            ++wPurchasedAmount;
             printf("Your attack increased to %d!\n", player->attack);
-            break;
-        } else if (upgradeChoice == 2) {
-            player->defense += 2;
-            player->gold -= upgradeCost;
-            printf("Your defense increased to %d!\n", player->defense);
-            break;
-        } else if (upgradeChoice == 3) {
-            break;
+            waitMsg("Press Enter to Continue!...\n");
         } else {
+            system("clear");
+            printf("You don't have enough gold to upgrade your armor. Earn more by exploring!\n");
+            waitMsg("Press Enter to Continue!...\n");
+        }
+
+        if (upgradeChoice == 2 && player->gold >= armorUpgradeCost) {
+            player->defense += 2;
+            player->gold -= armorUpgradeCost;
+            ++aPurchasedAmount;
+            printf("Your defense increased to %d!\n", player->defense);
+            waitMsg("Press Enter to Continue!...\n");
+        } else {
+            system("clear");
+            printf("You don't have enough gold to upgrade your armor. Earn more by exploring!\n");
+            waitMsg("Press Enter to Continue!...\n");
+        }
+
+        if (upgradeChoice == 3) {
+            break;
+        } 
+        
+        if (upgradeChoice >= 4 || upgradeChoice <= 0){
             printf("Invalid choice. Please try again.\n");
+            waitMsg("Press Enter to Continue!...\n");
         }
     }
 }
 
+void randomEncounter(Player *player) {
+    int goldReward = rand() % 10 + 5;
+    
+    player->gold += goldReward;
+    printf("You found %d gold!\n", goldReward);
+    waitMsg("Press Enter to Continue!...\n");
+}
+
 int combat(Player *player, const char *enemyName, int enemyHp, int enemyAtk, int enemyDef) {
     printf("\nYou have encountered %s!\n", enemyName);
-    printf("%s Stats->HP: %d, Attack: %d, Defense: %d\n", enemyName, enemyHp, enemyAtk, enemyDef);
+    printf("%s's Stats -> HP: %d, Attack: %d, Defense: %d\n", enemyName, enemyHp, enemyAtk, enemyDef);
 
     while (enemyHp > 0 && player->hp > 0) {
         int damage = player->attack - enemyDef;
@@ -356,14 +400,19 @@ int combat(Player *player, const char *enemyName, int enemyHp, int enemyAtk, int
 
     if (player->hp <= 0) {
         printf("You were defeated by %s...\n", enemyName);
+        waitMsg("Press Enter to Continue!...\n");
         return FAILURE;
     } else {
         printf("You defeated %s!\n", enemyName);
-        int xpGain = rand() % 50 + 50; // Randomized XP reward between 50 and 100
+        int xpGain = rand() % 50 + 50;
         player->xp += xpGain;
         printf("You gained %d XP!\n", xpGain);
+        int goldReward = rand() % 10 + 5;
+        player->gold += goldReward;
+        printf("You found %d gold!\n", goldReward);
+        waitMsg("Press Enter to Continue!...\n");
 
-        levelUp(player); // Check if the player should level up
+        levelUp(player);
         return SUCCESS;
     }
 }
@@ -373,9 +422,7 @@ int gaurdianCombat(Player *player, int guardianHp, int guardianAtk, int guardian
     int damage;
 
     while (guardianHp > 0 && player->hp > 0) {
-        printf("\n###########################\n");
-        printf("\n#       Combat Menu       #\n");
-        printf("\n###########################\n\n");
+        printf("\n#       Boss Fight Menu      #\n\n");
         printf("1) Attack\n");
         printf("2) Defend\n");
         printf("3) Use Item (not implemented)\n");
@@ -392,27 +439,33 @@ int gaurdianCombat(Player *player, int guardianHp, int guardianAtk, int guardian
             if (damage < 0) damage = 0;
             player->hp -= damage;
             printf("The guardian retaliates and deals %d damage to you. Your HP: %d\n", damage, player->hp);
+            waitMsg("Press Enter to Continue!...\n");
         } else if (choice == 2) {
             damage = (guardianAtk - player->defense) / 2;
             if (damage < 0) damage = 0;
             player->hp -= damage;
             printf("You defend against the guardian's attack, reducing damage to %d. Your HP: %d\n", damage, player->hp);
+            waitMsg("Press Enter to Continue!...\n");
         } else if (choice == 3) {
             printf("This feature is not yet implemented.\n");
+            waitMsg("Press Enter to Continue!...\n");
         } else {
             printf("Invalid choice. Please try again.\n");
+            waitMsg("Press Enter to Continue!...\n");
         }
 
         if (guardianHp <= 0) {
             printf("You defeated the guardian!\n");
-            int xpGain = 100; // Fixed XP reward for defeating a guardian
+            int xpGain = 100;
             player->xp += xpGain;
             printf("You gained %d XP!\n", xpGain);
 
-            levelUp(player); // Check if the player should level up
+            levelUp(player);
+            waitMsg("Press Enter to Continue!...\n");
             return SUCCESS;
         } else if (player->hp <= 0) {
             printf("You were defeated by the guardian...\n");
+            waitMsg("Press Enter to Continue!...\n");
             return FAILURE;
         }
     }
@@ -420,17 +473,13 @@ int gaurdianCombat(Player *player, int guardianHp, int guardianAtk, int guardian
     return SUCCESS;
 }
 
-// Pause menu function
 int menuPause(Player * player) {
     while (1) {
         int choice;
-        printf("\n##########################\n");
-        printf("\n#       Pause Menu       #\n");
-        printf("\n##########################\n\n");
+        printf("\n#       Pause Menu       #\n\n");
         printf("1) Resume\n");
         printf("2) Save Game\n");
-        printf("3) Load Game\n");
-        printf("4) Quit to Main Menu\n");
+        printf("3) Quit to Main Menu\n");
         printf("Enter your choice: ");
         scanf("%d", &choice);
 
@@ -439,24 +488,20 @@ int menuPause(Player * player) {
         } else if (choice == 2) {
             if (saveGame(player) == SUCCESS) {
                 printf("Game saved successfully.\n");
+                waitMsg("Press Enter to Continue!...\n");
             } else {
                 printf("Failed to save the game.\n");
+                waitMsg("Press Enter to Continue!...\n");
             }
             return SUCCESS;
         } else if (choice == 3) {
-            if (loadGame(player) == SUCCESS) {
-                printf("Game loaded successfully.\n");
-            } else {
-                printf("Failed to load the game.\n");
-            }
-            return SUCCESS;
-        } else if (choice == 4) {
             system("clear");
             printf("Returning to main menu...\n");
             menuStart();
             break;
         } else {
             printf("Invalid choice. Please try again.\n");
+            waitMsg("Press Enter to Continue!...\n");
         }
     }
 
@@ -466,22 +511,11 @@ int menuPause(Player * player) {
 int loadGame(Player *player) {
     FILE *file = fopen("playerData/savefile.txt", "r");
 
-    if (file == NULL) {
-        printf("Error: Save file not found. Starting a new game.\n");
-        return FAILURE;
-    }
-
     int result = fscanf(file, "%s %d %d %d %d %d %d %d %d %d", 
                         player->name, &player->hp, &player->attack, 
                         &player->defense, &player->inventorySize, 
                         &player->fragmentsCollected, &player->gold, 
                         &player->level, &player->xp, &player->xpToNextLevel);
-
-    if (result != 10) {
-        printf("Error: Failed to read player data correctly. Starting a new game.\n");
-        fclose(file);
-        return FAILURE;
-    }
 
     fclose(file);
     return SUCCESS;
@@ -491,6 +525,7 @@ int saveGame(Player *player) {
     FILE *file = fopen("playerData/savefile.txt", "w");
     if (file == NULL) {
         printf("ERROR: Couldn't save!\n");
+        waitMsg("Press Enter to Continue!...\n");
         return FAILURE;
     }
 
@@ -504,26 +539,25 @@ int saveGame(Player *player) {
 }
 
 void levelUp(Player *player) {
+    system("clear");
     if (player->xp >= player->xpToNextLevel) {
         player->level++;
         player->xp -= player->xpToNextLevel;
-        player->xpToNextLevel += 100; // Increase XP requirement for the next level
+        player->xpToNextLevel += 100 + (10 + (rand() % player->level));
 
-        // Increase player stats on level up
         player->hp += 5;
         player->attack += 2;
         player->defense += 2;
 
         printf("\nCongratulations! You've leveled up to level %d!\n", player->level);
         printf("Your HP increased to %d, Attack to %d, and Defense to %d.\n", player->hp, player->attack, player->defense);
+        waitMsg("Press Enter to continue!...");
     }
 }
 
-// Create new player function
 int createNewPlayer(Player *player) {
-    printf("\n##################################\n");
-    printf("\n#       Character Creation       #\n");
-    printf("\n##################################\n\n");
+    system("clear");
+    printf("\n#       Character Creation       #\n\n");
     printf("Enter your character's name: ");
     scanf("%s", player->name);
     player->hp = DEFLT_HP;
@@ -535,22 +569,32 @@ int createNewPlayer(Player *player) {
     player->level = 1;
     player->xp = 0;
     player->xpToNextLevel = 100;
+    system("clear");
+    printf("Creating new character...\n");
+    sleep(2);
+    system("clear");
     return SUCCESS;
 }
 
-// Display story function
 void displayStory(const char * story) {
     printf("\n%s\n", story);
     sleep(2);
 }
 
-// Main function
 int main(void) {
     system("clear");
-    system("mkdir -p player");
+    system("mkdir -p playerData");
 
     srand(time(NULL));
+    Player player;
 
+    if (loadGame(&player) == FAILURE) {
+        if (createNewPlayer(&player) != SUCCESS) {
+            printf("Failed to create new player.\n");
+            return FAILURE;
+        }
+    }
+    
     menuStart();
     return SUCCESS;
 }
