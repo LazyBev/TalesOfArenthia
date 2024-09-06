@@ -29,26 +29,26 @@ typedef struct {
     int xpToNextLevel;
 } Player;
 
-int gameLoop(Player * player);
+int gameLoop(Player *player);
 int menuStart();
-int menuPause(Player * player);
-int loadGame(Player * player);
-int saveGame(Player * player);
-int whichBoss(Player * player);
-int createNewPlayer(Player * player);
-int combat(Player * player, const char * guardianName, int guardianHp, int guardianAtk, int guardianDef);
-int gaurdianCombat(Player * player, int guardianHp, int guardianAtk, int guardianDef);
-void displayStory(const char * story);
-void exploreRegion(Player * player);
-void upgradeGear(Player * player);
-void randomEncounter(Player * player);
+int menuPause(Player *player);
+int loadGame(Player *player);
+int saveGame(Player *player);
+int whichBoss(Player *player);
+int createNewPlayer(Player *player);
+int combat(Player *player, const char *guardianName, int guardianHp, int guardianAtk, int guardianDef);
+int gaurdianCombat(Player *player, int guardianHp, int guardianAtk, int guardianDef);
+void displayStory(const char *story);
+void exploreRegion(Player *player);
+void upgradeGear(Player *player);
+void randomEncounter(Player *player);
 void levelUp(Player *player);
-void checkStats(Player * player);
+void checkStats(Player *player);
 
 int isNewPlyr = 1;
 int startMsg = 0;
-int wPurchasedAmount = 0;
-int aPurchasedAmount = 0;
+int wAmount = 1;
+int aAmount = 1;
 
 void waitMsg(char *msg) {
     printf("%s", msg);
@@ -77,7 +77,7 @@ int menuStart() {
     system("clear");
     printf("\n#       Welcome to lazyrpg!       #\n\n");
 
-    FILE * new = fopen("playerData/isNew.txt", "r");
+    FILE *new = fopen("playerData/isNew.txt", "r");
     int choice;
 
     if (new != NULL) {
@@ -315,6 +315,7 @@ void exploreRegion(Player *player) {
                             break;
                         } else {
                             printf("Invalid choice. Please try again.\n");
+                            waitMsg("Press Enter to Continue!...\n");
                             system("clear");
                         }
                     }
@@ -325,6 +326,7 @@ void exploreRegion(Player *player) {
                     gameLoop(player);
                 } else {
                     printf("Invalid try again!");
+                    waitMsg("Press Enter to Continue!...\n");
                     system("clear");
                 }
             }
@@ -332,14 +334,16 @@ void exploreRegion(Player *player) {
             gameLoop(player);
         } else {
             printf("Invalid try again!");
+            waitMsg("Press Enter to Continue!...\n");
+            system("clear");
         }
     }
 }
 
 void upgradeGear(Player *player) {
     int upgradeChoice;
-    int weaponUpgradeCost = (wPurchasedAmount != 0) ? 20 * wPurchasedAmount : 20;
-    int armorUpgradeCost = (aPurchasedAmount != 0) ? 20 * aPurchasedAmount : 20;
+    int weaponUpgradeCost = 20 * wAmount;
+    int armorUpgradeCost = 20 * aAmount;
     
     system("clear");
     printf("Checking funds...\n");
@@ -353,7 +357,7 @@ void upgradeGear(Player *player) {
         system("clear");
         printf("\n#       Upgrade Gear       #\n\n");
         printf("You have %d gold.\n\n", player->gold);
-        printf("Upgrade cost:\nWeapon: %d gold\nArmor: %d\n", weaponUpgradeCost, armorUpgradeCost);
+        printf("Upgrade cost:\nWeapon: %d gold\nArmor: %d gold\n", weaponUpgradeCost, armorUpgradeCost);
         printf("1) Upgrade Weapon (Increase Attack)\n");
         printf("2) Upgrade Armor (Increase Defense)\n");
         printf("3) Cancel\n");
@@ -364,35 +368,30 @@ void upgradeGear(Player *player) {
         if (upgradeChoice == 1 && player->gold >= weaponUpgradeCost) {
             player->attack += 2;
             player->gold -= weaponUpgradeCost;
-            ++wPurchasedAmount;
+            ++wAmount;
             printf("Your attack increased to %d!\n", player->attack);
             waitMsg("Press Enter to Continue!...\n");
-        } else {
+        } else if (upgradeChoice == 1 && player->gold < weaponUpgradeCost) {
             system("clear");
-            printf("You don't have enough gold to upgrade your armor. Earn more by exploring!\n");
+            printf("You don't have enough gold to upgrade your weapon. Earn more by exploring!\n");
             waitMsg("Press Enter to Continue!...\n");
-        }
-
-        if (upgradeChoice == 2 && player->gold >= armorUpgradeCost) {
+        } else if (upgradeChoice == 2 && player->gold >= armorUpgradeCost) {
             player->defense += 2;
             player->gold -= armorUpgradeCost;
-            ++aPurchasedAmount;
+            ++aAmount;
             printf("Your defense increased to %d!\n", player->defense);
             waitMsg("Press Enter to Continue!...\n");
-        } else {
+        } else if (upgradeChoice == 2 && player->gold < armorUpgradeCost) {
             system("clear");
             printf("You don't have enough gold to upgrade your armor. Earn more by exploring!\n");
             waitMsg("Press Enter to Continue!...\n");
-        }
-
-        if (upgradeChoice == 3) {
+        } else if (upgradeChoice == 3) {
             break;
-        } 
-        
-        if (upgradeChoice >= 4 || upgradeChoice <= 0){
+        } else {
             printf("Invalid choice. Please try again.\n");
             waitMsg("Press Enter to Continue!...\n");
         }
+
     }
 }
 
@@ -497,7 +496,7 @@ int gaurdianCombat(Player *player, int guardianHp, int guardianAtk, int guardian
     return SUCCESS;
 }
 
-int menuPause(Player * player) {
+int menuPause(Player *player) {
     while (1) {
         int choice;
         printf("\n#       Pause Menu       #\n\n");
@@ -601,7 +600,7 @@ int createNewPlayer(Player *player) {
     return SUCCESS;
 }
 
-void displayStory(const char * story) {
+void displayStory(const char *story) {
     printf("\n%s\n", story);
     sleep(2);
 }
