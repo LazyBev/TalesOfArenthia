@@ -36,7 +36,7 @@ int loadGame(Player *player);
 int saveGame(Player *player);
 int whichBoss(Player *player);
 int createNewPlayer(Player *player);
-int combat(Player *player, const char *guardianName, int guardianHp, int guardianAtk, int guardianDef);
+int combat(Player *player, const char *enemyName, int enemyHp, int enemyAtk, int enemyDef);
 int gaurdianCombat(Player *player, int guardianHp, int guardianAtk, int guardianDef);
 void displayStory(const char *story);
 void exploreRegion(Player *player);
@@ -57,18 +57,19 @@ void waitMsg(char *msg) {
 }
 
 int autosave(Player *player) {
+    system("clear");
     printf("Autosaving...\n");
-    sleep(2);
+    sleep(1);
     system("clear");
     if (saveGame(player) == SUCCESS) {
         system("clear");
         printf("Game saved successfully.\n");
-        waitMsg("Press Enter to Continue!...");
+        sleep(1);
         return SUCCESS;
     } else {
         system("clear");
         printf("Failed to save the game.\n");
-        waitMsg("Press Enter to Continue!...");
+        sleep(1);
         return FAILURE;
     }
 }
@@ -142,7 +143,7 @@ int menuStart() {
                 break;
             } else if (choice == 3) {
                 system("clear");
-                sleep(2);
+                sleep(1);
                 printf("See ya next time! :D\n");
                 exit(0);
             } else {
@@ -159,7 +160,7 @@ int gameLoop(Player *player) {
 
     if (startMsg == 0) {
         printf("Starting game as %s...\n", player->name);
-        sleep(2);
+        sleep(1);
         system("clear");
         printf("\n#       Story       #\n");
         displayStory("As the last heir of Arenthia, you embark on a quest to restore your once glorious kingdom, shattered by the earth shattering dark magic\nof Drüig, the almighty dark sorcerer. The kingdom of Arenthia used to be a fluorishing kingdom full of life and amazing people. Now its\nyour job to go and save your people");
@@ -224,13 +225,10 @@ void checkStats(Player *player) {
 
 void exploreRegion(Player *player) {
     int regionChoice;
-    int monsterHp = rand() % 10 + 5;
-    int monsterAtk = rand() % 5 + 3;
-    int monsterDef = rand() % 3 + 2;
 
     system("clear");
     printf("Loading map...\n");
-    sleep(2);
+    sleep(1);
     system("clear");
 
     while (1) {
@@ -245,6 +243,10 @@ void exploreRegion(Player *player) {
         system("clear");
         if (regionChoice != 5 && regionChoice >= 1 && regionChoice <= 4) {
             int encounterChoice;
+            int monsterHp = rand() % 15;
+            int monsterAtk = rand() % 15;
+            int monsterDef = rand() % 15;
+
             while (1) {
                 system("clear");
                 printf("\n#       Choose Your Encounter       #\n\n");
@@ -266,45 +268,55 @@ void exploreRegion(Player *player) {
                     system("clear");
                     if (encounterChoice == 1) {
                         if (player->fragmentsCollected <= 0) {
-                            if (gaurdianCombat(player, 15, 5, 5) == SUCCESS) {
-                                player->fragmentsCollected++;
+                            if (gaurdianCombat(player, 50, 20, 15) == SUCCESS) {
+                                player->fragmentsCollected = 1;
                                 displayStory("With the Shadow Wraith defeated, you hold the first fragment of the Crystal. Four more remain. The path ahead leads to Mount Frostbite, where the Ice Dragon awaits.");
+                                waitMsg("Press Enter to continue!...");
+                                system("clear");
+                            } else {
+                                break;
                             }
-                        } else {
-                            break;
                         }
                     } else if (encounterChoice == 2) {
                         if (player->fragmentsCollected == 1) {
-                            if (gaurdianCombat(player, 20, 7, 7) == SUCCESS) {
+                            if (gaurdianCombat(player, 100, 50, 25) == SUCCESS) {
                                 player->fragmentsCollected++;
                                 displayStory("You have conquered the Ice Dragon and claimed the second fragment of the Crystal. Your journey now takes you to the Desert of Lost Souls, where the Sand Serpent lurks.");
+                                waitMsg("Press Enter to continue!...");
+                                system("clear");
                             } else {
                                 break;
                             }
                         }
                     } else if (encounterChoice == 3) {
                         if (player->fragmentsCollected == 2) {
-                            if (gaurdianCombat(player, 18, 6, 6) == SUCCESS) {
+                            if (gaurdianCombat(player, 200, 80, 35) == SUCCESS) {
                                 player->fragmentsCollected++;
                                 displayStory("The Sand Serpent has fallen, and the third fragment is yours. Next, venture into the Swamp of Despair to face the Bog Beast.");
+                                waitMsg("Press Enter to continue!...");
+                                system("clear");
                             } else {
                                 break;
                             }
                         }
                     } else if (encounterChoice == 4) {
                         if (player->fragmentsCollected == 3) {
-                            if (gaurdianCombat(player, 22, 8, 8) == SUCCESS) {
+                            if (gaurdianCombat(player, 400, 110, 45) == SUCCESS) {
                                 player->fragmentsCollected++;
                                 displayStory("The Ruler of the Bog is no more, and the fourth fragment is now in your possession. The final fragment awaits in Zoltar's Fortress.");
+                                waitMsg("Press Enter to continue!...");
+                                system("clear");
                             } else {
                                 break;
                             }
                         } else if (encounterChoice == 5) {
                             if (player->fragmentsCollected == 4) {
-                                if (gaurdianCombat(player, 30, 10, 10) == SUCCESS) {
+                                if (gaurdianCombat(player, 800, 140, 55) == SUCCESS) {
                                     player->fragmentsCollected++;
                                     displayStory("You have defeated Drüig and reunited the Crystal of Light. Arenthia is saved, and you have restored peace to the kingdom. Congratulations!");
                                     printf("You have completed the game!\n");
+                                    waitMsg("Press Enter to continue!...");
+                                    system("clear");
                                     exit(0);
                                 } else {
                                     break;
@@ -347,10 +359,10 @@ void upgradeGear(Player *player) {
     
     system("clear");
     printf("Checking funds...\n");
-    sleep(2);
+    sleep(1);
     system("clear");
     printf("Loading shop...\n");
-    sleep(2);
+    sleep(1);
     system("clear");
 
     while (1) {
@@ -395,14 +407,6 @@ void upgradeGear(Player *player) {
     }
 }
 
-void randomEncounter(Player *player) {
-    int goldReward = rand() % 10 + 5;
-    
-    player->gold += goldReward;
-    printf("You found %d gold!\n", goldReward);
-    waitMsg("Press Enter to Continue!...\n");
-}
-
 int combat(Player *player, const char *enemyName, int enemyHp, int enemyAtk, int enemyDef) {
     printf("\nYou have encountered %s!\n", enemyName);
     printf("%s's Stats -> HP: %d, Attack: %d, Defense: %d\n", enemyName, enemyHp, enemyAtk, enemyDef);
@@ -445,6 +449,7 @@ int gaurdianCombat(Player *player, int guardianHp, int guardianAtk, int guardian
     int damage;
 
     while (guardianHp > 0 && player->hp > 0) {
+        system("clear");
         printf("\n#       Boss Fight Menu      #\n\n");
         printf("1) Attack\n");
         printf("2) Defend\n");
@@ -485,10 +490,13 @@ int gaurdianCombat(Player *player, int guardianHp, int guardianAtk, int guardian
 
             levelUp(player);
             waitMsg("Press Enter to Continue!...\n");
+            autosave(player);
+            system("clear");
             return SUCCESS;
         } else if (player->hp <= 0) {
             printf("You were defeated by the guardian...\n");
             waitMsg("Press Enter to Continue!...\n");
+            system("clear");
             return FAILURE;
         }
     }
@@ -576,6 +584,7 @@ void levelUp(Player *player) {
         printf("\nCongratulations! You've leveled up to level %d!\n", player->level);
         printf("Your HP increased to %d, Attack to %d, and Defense to %d.\n", player->hp, player->attack, player->defense);
         waitMsg("Press Enter to continue!...");
+        autosave(player);
     }
 }
 
@@ -595,14 +604,14 @@ int createNewPlayer(Player *player) {
     player->xpToNextLevel = 100;
     system("clear");
     printf("Creating new character...\n");
-    sleep(2);
+    sleep(1);
     system("clear");
     return SUCCESS;
 }
 
 void displayStory(const char *story) {
     printf("\n%s\n", story);
-    sleep(2);
+    sleep(1);
 }
 
 int main(void) {
