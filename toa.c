@@ -51,7 +51,9 @@ int startMsg = 0;
 
 int menuStart() {
     system("clear");
-    printf("---- Welcome to lazyrpg! ----\n\n");
+    printf("\n###################################\n");
+    printf("\n#       Welcome to lazyrpg!       #\n");
+    printf("\n###################################\n\n");
 
     FILE * new = fopen("playerData/isNew.txt", "r");
     int choice;
@@ -137,7 +139,9 @@ int gameLoop(Player *player) {
 
     int choice;
     while (player->fragmentsCollected < 5) {
-        printf("\n---- Main Menu ----\n");
+        printf("\n#########################\n");
+        printf("\n#       Main Menu       #\n");
+        printf("\n#########################\n\n");
         printf("1) Explore Region\n");
         printf("2) Upgrade Gear\n");
         printf("3) Check Stats\n");
@@ -163,7 +167,9 @@ int gameLoop(Player *player) {
 }
 
 void checkStats(Player *player) {
-    printf("\n---- Player Stats ----\n");
+    printf("\n############################\n");
+    printf("\n#       Player Stats       #\n");
+    printf("\n############################\n\n");
     printf("Name: %s\n", player->name);
     printf("Level: %d\n", player->level);
     printf("XP: %d / %d\n", player->xp, player->xpToNextLevel);
@@ -178,7 +184,9 @@ void checkStats(Player *player) {
 void exploreRegion(Player *player) {
     int regionChoice;
     while (1) {
-        printf("\n---- Select a Region to Explore ----\n");
+        printf("\n##########################################\n");
+        printf("\n#       Select a Region to Explore       #\n");
+        printf("\n##########################################\n\n");
         printf("1) Forest of Whispering Shadows (Easy)\n");
         printf("2) Mount Frostbite (Medium)\n");
         printf("3) Desert of Lost Souls (Hard)\n");
@@ -186,7 +194,7 @@ void exploreRegion(Player *player) {
         printf("5) Go Back\n");
         printf("Enter your choice: ");
         scanf("%d", &regionChoice);
-        if (regionChoice >= 1 && regionChoice <= 4) {
+        if (regionChoice != 5 && regionChoice > 1 && regionChoice <= 4) {
             int encounterChoice;
             while (1) {
                 printf("\n---- Choose Your Encounter ----\n");
@@ -266,8 +274,10 @@ void exploreRegion(Player *player) {
                     printf("Invalid try again!");
                 }
             }
-        } else if (encounterChoice == 5) {
+        } else if (regionChoice == 5) {
             gameLoop(player);
+        } else {
+            printf("Invalid try again!");
         }
     }
 }
@@ -297,7 +307,9 @@ void upgradeGear(Player *player) {
     }
 
     while (1) {
-        printf("\n---- Upgrade Gear ----\n");
+        printf("\n############################\n");
+        printf("\n#       Upgrade Gear       #\n");
+        printf("\n############################\n\n");
         printf("You have %d gold.\n", player->gold);
         printf("Upgrade cost: %d gold\n", upgradeCost);
         printf("1) Upgrade Weapon (Increase Attack)\n");
@@ -361,7 +373,9 @@ int gaurdianCombat(Player *player, int guardianHp, int guardianAtk, int guardian
     int damage;
 
     while (guardianHp > 0 && player->hp > 0) {
-        printf("\n---- Combat Menu ----\n");
+        printf("\n###########################\n");
+        printf("\n#       Combat Menu       #\n");
+        printf("\n###########################\n\n");
         printf("1) Attack\n");
         printf("2) Defend\n");
         printf("3) Use Item (not implemented)\n");
@@ -410,7 +424,9 @@ int gaurdianCombat(Player *player, int guardianHp, int guardianAtk, int guardian
 int menuPause(Player * player) {
     while (1) {
         int choice;
-        printf("\n---- Pause Menu ----\n");
+        printf("\n##########################\n");
+        printf("\n#       Pause Menu       #\n");
+        printf("\n##########################\n\n");
         printf("1) Resume\n");
         printf("2) Save Game\n");
         printf("3) Load Game\n");
@@ -505,6 +521,9 @@ void levelUp(Player *player) {
 
 // Create new player function
 int createNewPlayer(Player *player) {
+    printf("\n##################################\n");
+    printf("\n#       Character Creation       #\n");
+    printf("\n##################################\n\n");
     printf("Enter your character's name: ");
     scanf("%s", player->name);
     player->hp = DEFLT_HP;
